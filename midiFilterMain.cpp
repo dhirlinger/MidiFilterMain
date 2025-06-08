@@ -331,18 +331,11 @@ void midiFilter_list(t_midiFilter *x, t_symbol *msg, long argc, t_atom *argv)
                     return;
                     
                     //else run again with new pitch
+                    //UPDATE: refactor-> no need to run again add to lists and to reassigned if > 0 && < 128.
                     
                 } else {
                     
-                    firstReturnedPitch = pitch;
-                    pitch = midiFilter_mainMath(x, pitch);
-                   
-                    //if pitch is unchanged second time play and add to lists
-                    
-                    if (firstReturnedPitch == pitch) {
-                        
-                        //systhread_mutex_lock(x->m_mutex);
-                        
+                    if (pitch < 128) {
                         x->m_localNotes->push_back(pitch);
                         x->m_mainNotes->push_back(pitch);
                         x->m_reassignedNotes->push_back({beforeMain,pitch});
@@ -354,40 +347,12 @@ void midiFilter_list(t_midiFilter *x, t_symbol *msg, long argc, t_atom *argv)
                         outlet_list(x->m_outlet, NULL, 2, argv);
                         
                         return;
-                        
-                        //else drop and exit
-                        
-                    } else {
-                        
-                        firstReturnedPitch = pitch;
-                        pitch = midiFilter_mainMath(x, pitch);
-                        
-                        if (firstReturnedPitch == pitch) {
-                            
-                            //systhread_mutex_lock(x->m_mutex);
-                            
-                            x->m_localNotes->push_back(pitch);
-                            x->m_mainNotes->push_back(pitch);
-                            x->m_reassignedNotes->push_back({beforeMain,pitch});
-                            
-                            //systhread_mutex_unlock(x->m_mutex);
-                            
-                            atom_setlong(argv, pitch);
-                            
-                            outlet_list(x->m_outlet, NULL, 2, argv);
-                            
-                            return;
-                            
-                        } else {
-                            
-                            post("end of the note-on main math line");
-                            
-                            return;
-                            
-                        }
-                        
                     }
-                        
+                    
+                    else {
+                        return;
+                    }
+                    
                 }
                 
                 return;
