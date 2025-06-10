@@ -73,6 +73,7 @@ long    midiFilter_arrayContains(t_midiFilter *x, numberArrayVector &collection,
 void    midiFilter_removeValuesFromArray(t_midiFilter *x, numberArrayVector &collection, long valueToRemove);
 void    midiFilter_version();
 void    midiFilter_printReassigned(t_midiFilter *x);
+//void    midiFilter_isEmpty(t_midiFilter *x, long deviceID);
 
 
 // globals
@@ -106,6 +107,7 @@ void ext_main(void *r)
     class_addmethod(c, (method)midiFilter_removeValuesFromArray, "int", A_LONG, 0);
     class_addmethod(c, (method)midiFilter_version, "version", 0);
     class_addmethod(c, (method)midiFilter_printReassigned, "printReassigned", 0);
+    //class_addmethod(c, (method)midiFilter_isEmpty, "isEmpty", A_LONG, 0);
     
 
     class_register(CLASS_BOX, c);
@@ -294,8 +296,6 @@ void midiFilter_list(t_midiFilter *x, t_symbol *msg, long argc, t_atom *argv)
             
             // refire if note is already in local and localMath returns a pitch then exit
             
-//            bool localMath = midiFilter_localMath(x, pitch);
-//            post("localMath %ld", localMath);
             
             if (midiFilter_contains(x, *x->m_localNotes, pitch) && midiFilter_localMath(x, pitch)){
                 
@@ -330,7 +330,6 @@ void midiFilter_list(t_midiFilter *x, t_symbol *msg, long argc, t_atom *argv)
                     
                     return;
                     
-                    //else run again with new pitch
                     //UPDATE: refactor-> no need to run again add to lists and to reassigned if > 0 && < 128.
                     
                 } else {
@@ -651,10 +650,13 @@ void midiFilter_printReassigned(t_midiFilter *x)
     }
 }
     
-
-
 void midiFilter_version()
 {
     post("midiFilter object 3.0 big-refactor");
 }
+
+//void midiFilter_isEmpty(t_midiFilter *x, long deviceID)
+//{
+//    post("device ID: %d", deviceID);
+//}
 
