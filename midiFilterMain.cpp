@@ -10,7 +10,7 @@
 #include "ext_obex.h"
 #include "ext_strings.h"
 #include "ext_common.h"
-#include "ext_systhread.h"
+//#include "ext_systhread.h"
 #include <array>
 #include <vector>
 using namespace std;
@@ -73,7 +73,7 @@ long    midiFilter_arrayContains(t_midiFilter *x, numberArrayVector &collection,
 void    midiFilter_removeValuesFromArray(t_midiFilter *x, numberArrayVector &collection, long valueToRemove);
 void    midiFilter_version();
 void    midiFilter_printReassigned(t_midiFilter *x);
-//void    midiFilter_isEmpty(t_midiFilter *x, long deviceID);
+void    midiFilter_isEmpty(t_midiFilter *x, long deviceID);
 
 
 // globals
@@ -83,7 +83,7 @@ static t_class    *s_midiFilter_class = NULL;
 
 void ext_main(void *r)
 {
-    t_class    *c = class_new("midiFilter",
+    t_class    *c = class_new("midiFilterMain",
                            (method)midiFilter_new,
                            (method)midiFilter_free,
                            sizeof(t_midiFilter),
@@ -107,13 +107,13 @@ void ext_main(void *r)
     class_addmethod(c, (method)midiFilter_removeValuesFromArray, "int", A_LONG, 0);
     class_addmethod(c, (method)midiFilter_version, "version", 0);
     class_addmethod(c, (method)midiFilter_printReassigned, "printReassigned", 0);
-    //class_addmethod(c, (method)midiFilter_isEmpty, "isEmpty", A_LONG, 0);
+    class_addmethod(c, (method)midiFilter_isEmpty, "isEmpty", A_LONG, 0);
     
 
     class_register(CLASS_BOX, c);
     s_midiFilter_class = c;
     
-    post("midiFilter object 3.0 big-refactor");
+    post("midiFilterMain object 1.0");
 }
 
 
@@ -652,11 +652,26 @@ void midiFilter_printReassigned(t_midiFilter *x)
     
 void midiFilter_version()
 {
-    post("midiFilter object 3.0 big-refactor");
+    post("midiFilterMain object 1.0");
 }
 
-//void midiFilter_isEmpty(t_midiFilter *x, long deviceID)
-//{
-//    post("device ID: %d", deviceID);
-//}
+void midiFilter_isEmpty(t_midiFilter *x, long deviceID)
+{
+    long mainSize = x->m_mainNotes->size();
+    long isEmpty;
+    
+    t_atom *av = NULL;
+    av = new t_atom[2];
+    
+    if (mainSize == 0) {isEmpty = 1;} else {isEmpty = 0;}
+    
+    atom_setlong(av, deviceID);
+    atom_setlong(av + 1, isEmpty);
+    
+    
+    outlet_anything(x->m_outlet2, gensym("isEmpty"), 2, av);
+    
+    post("device ID: %d", deviceID);
+    post("mainSize: %d", mainSize);
+}
 
