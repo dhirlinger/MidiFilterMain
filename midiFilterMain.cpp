@@ -127,7 +127,7 @@ void *midiFilter_new(t_symbol *s, long argc, t_atom *argv)
     x = (t_midiFilter *)object_alloc(s_midiFilter_class);
     if (x) {
        //systhread_mutex_new(&x->m_mutex, 0);
-        x->m_outlet2 = outlet_new(x, NULL);
+        x->m_outlet2 = listout((t_object *)x);
         x->m_outlet = outlet_new(x, NULL);
         x->m_mainNotes = new numberVector;
         x->m_mainNotes->reserve(220);
@@ -155,9 +155,18 @@ void midiFilter_free(t_midiFilter *x)
 void midiFilter_assist(t_midiFilter *x, void *b, long msg, long arg, char *dst)
 {
     if (msg==1)
-        strcpy(dst, "input");
-    else if (msg==2)
-        strcpy(dst, "output");
+        strcpy(dst, "deviceID, pitch, velocity from Locals");
+    
+    else if (msg==2) {
+        
+        if (arg==0) {
+            strcpy(dst, "output to locals");
+        } else if (arg==1) {
+            strcpy(dst, "print to screen");
+        }
+        
+    }
+        
 }
 
 
@@ -266,8 +275,9 @@ void midiFilter_list(t_midiFilter *x, t_symbol *msg, long argc, t_atom *argv)
     
     if (argc > 0) {
         
-        long pitch = atom_getlong(argv);
-        long velocity = atom_getlong(argv+1);
+        long deviceID = atomgetlong(argv);
+        long pitch = atom_getlong(argv+1);
+        long velocity = atom_getlong(argv+2);
         long beforeMain;
         long firstReturnedPitch;
         long reassignedPitch;
@@ -669,7 +679,7 @@ void midiFilter_isEmpty(t_midiFilter *x, long deviceID)
     atom_setlong(av + 1, isEmpty);
     
     
-    outlet_anything(x->m_outlet2, gensym("isEmpty"), 2, av);
+    outlet_list(x->m_outlet2, gensym("isEmpty"), 2, av);
     
     post("device ID: %d", deviceID);
     post("mainSize: %d", mainSize);
